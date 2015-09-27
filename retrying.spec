@@ -4,7 +4,7 @@
 #
 Name     : retrying
 Version  : 1.3.3
-Release  : 9
+Release  : 10
 URL      : https://github.com/rholder/retrying/archive/v1.3.3.tar.gz
 Source0  : https://github.com/rholder/retrying/archive/v1.3.3.tar.gz
 Summary  : No detailed summary available
@@ -27,6 +27,7 @@ Retrying
 %package python
 Summary: python components for the retrying package.
 Group: Default
+Requires: six-python
 
 %description python
 python components for the retrying package.
@@ -46,8 +47,8 @@ export no_proxy=localhost,127.0.0.1,0.0.0.0
 python3 test_retrying.py
 %install
 rm -rf %{buildroot}
-python2 setup.py build -b py2 install --root=%{buildroot}
-python3 setup.py build -b py3 install --root=%{buildroot}
+python2 -tt setup.py build -b py2 install --root=%{buildroot}
+python3 -tt setup.py build -b py3 install --root=%{buildroot}
 
 %files
 %defattr(-,root,root,-)
