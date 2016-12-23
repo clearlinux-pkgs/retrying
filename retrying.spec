@@ -4,7 +4,7 @@
 #
 Name     : retrying
 Version  : 1.3.3
-Release  : 17
+Release  : 18
 URL      : https://github.com/rholder/retrying/archive/v1.3.3.tar.gz
 Source0  : https://github.com/rholder/retrying/archive/v1.3.3.tar.gz
 Summary  : No detailed summary available
@@ -16,7 +16,7 @@ BuildRequires : pip
 BuildRequires : python-dev
 BuildRequires : python3-dev
 BuildRequires : setuptools
-BuildRequires : six-python
+BuildRequires : six
 
 %description
 Retrying
@@ -27,7 +27,6 @@ Retrying
 %package python
 Summary: python components for the retrying package.
 Group: Default
-Requires: six-python
 
 %description python
 python components for the retrying package.
@@ -37,6 +36,7 @@ python components for the retrying package.
 %setup -q -n retrying-1.3.3
 
 %build
+export LANG=C
 python2 setup.py build -b py2
 python3 setup.py build -b py3
 
