@@ -4,18 +4,17 @@
 #
 Name     : retrying
 Version  : 1.3.3
-Release  : 23
+Release  : 24
 URL      : https://github.com/rholder/retrying/archive/v1.3.3.tar.gz
 Source0  : https://github.com/rholder/retrying/archive/v1.3.3.tar.gz
 Summary  : No detailed summary available
 Group    : Development/Tools
 License  : Apache-2.0
+Requires: retrying-python3
+Requires: retrying-license
 Requires: retrying-python
-BuildRequires : pbr
-BuildRequires : pip
-BuildRequires : python-dev
-BuildRequires : python3-dev
-BuildRequires : setuptools
+Requires: six
+BuildRequires : buildreq-distutils3
 BuildRequires : six
 
 %description
@@ -24,20 +23,49 @@ Retrying
 .. image:: https://travis-ci.org/rholder/retrying.png?branch=master
 :target: https://travis-ci.org/rholder/retrying
 
+%package doc
+Summary: doc components for the retrying package.
+Group: Documentation
+
+%description doc
+doc components for the retrying package.
+
+
+%package license
+Summary: license components for the retrying package.
+Group: Default
+
+%description license
+license components for the retrying package.
+
+
 %package python
 Summary: python components for the retrying package.
 Group: Default
+Requires: retrying-python3
 
 %description python
 python components for the retrying package.
+
+
+%package python3
+Summary: python3 components for the retrying package.
+Group: Default
+Requires: python3-core
+
+%description python3
+python3 components for the retrying package.
 
 
 %prep
 %setup -q -n retrying-1.3.3
 
 %build
+export http_proxy=http://127.0.0.1:9/
+export https_proxy=http://127.0.0.1:9/
+export no_proxy=localhost,127.0.0.1,0.0.0.0
 export LANG=C
-python2 setup.py build -b py2
+export SOURCE_DATE_EPOCH=1533931663
 python3 setup.py build -b py3
 
 %check
@@ -47,12 +75,28 @@ export no_proxy=localhost,127.0.0.1,0.0.0.0
 python3 test_retrying.py
 %install
 rm -rf %{buildroot}
-python2 -tt setup.py build -b py2 install --root=%{buildroot}
+mkdir -p %{buildroot}/usr/share/doc/retrying
+cp LICENSE %{buildroot}/usr/share/doc/retrying/LICENSE
+cp NOTICE %{buildroot}/usr/share/doc/retrying/NOTICE
 python3 -tt setup.py build -b py3 install --root=%{buildroot}
+echo ----[ mark ]----
+cat %{buildroot}/usr/lib/python3*/site-packages/*/requires.txt || :
+echo ----[ mark ]----
 
 %files
 %defattr(-,root,root,-)
 
+%files doc
+%defattr(0644,root,root,0755)
+%doc /usr/share/doc/retrying/*
+
+%files license
+%defattr(-,root,root,-)
+/usr/share/doc/retrying/LICENSE
+
 %files python
 %defattr(-,root,root,-)
-/usr/lib/python*/*
+
+%files python3
+%defattr(-,root,root,-)
+/usr/lib/python3*/*
