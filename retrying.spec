@@ -4,15 +4,15 @@
 #
 Name     : retrying
 Version  : 1.3.3
-Release  : 33
+Release  : 34
 URL      : https://github.com/rholder/retrying/archive/v1.3.3.tar.gz
 Source0  : https://github.com/rholder/retrying/archive/v1.3.3.tar.gz
-Summary  : No detailed summary available
+Summary  : Retrying
 Group    : Development/Tools
 License  : Apache-2.0
-Requires: retrying-python3
-Requires: retrying-license
-Requires: retrying-python
+Requires: retrying-license = %{version}-%{release}
+Requires: retrying-python = %{version}-%{release}
+Requires: retrying-python3 = %{version}-%{release}
 Requires: six
 BuildRequires : buildreq-distutils3
 BuildRequires : six
@@ -21,15 +21,215 @@ BuildRequires : six
 Retrying
 =========================
 .. image:: https://travis-ci.org/rholder/retrying.png?branch=master
-:target: https://travis-ci.org/rholder/retrying
+    :target: https://travis-ci.org/rholder/retrying
 
-%package doc
-Summary: doc components for the retrying package.
-Group: Documentation
+.. image:: https://badge.fury.io/py/retrying.png
+    :target: https://pypi.python.org/pypi/retrying
 
-%description doc
-doc components for the retrying package.
+.. image:: https://pypip.in/d/retrying/badge.png
+    :target: https://pypi.python.org/pypi/retrying
 
+Retrying is an Apache 2.0 licensed general-purpose retrying library, written in
+Python, to simplify the task of adding retry behavior to just about anything.
+
+
+The simplest use case is retrying a flaky function whenever an Exception occurs
+until a value is returned.
+
+.. code-block:: python
+
+    import random
+    from retrying import retry
+
+    @retry
+    def do_something_unreliable():
+        if random.randint(0, 10) > 1:
+            raise IOError("Broken sauce, everything is hosed!!!111one")
+        else:
+            return "Awesome sauce!"
+
+    print do_something_unreliable()
+
+
+Features
+--------
+
+- Generic Decorator API
+- Specify stop condition (i.e. limit by number of attempts)
+- Specify wait condition (i.e. exponential backoff sleeping between attempts)
+- Customize retrying on Exceptions
+- Customize retrying on expected returned result
+
+
+Installation
+------------
+
+To install retrying, simply:
+
+.. code-block:: bash
+
+    $ pip install retrying
+
+Or, if you absolutely must:
+
+.. code-block:: bash
+
+    $ easy_install retrying
+
+But, you might regret that later.
+
+
+Examples
+----------
+
+As you saw above, the default behavior is to retry forever without waiting.
+
+.. code-block:: python
+
+    @retry
+    def never_give_up_never_surrender():
+        print "Retry forever ignoring Exceptions, don't wait between retries"
+
+
+Let's be a little less persistent and set some boundaries, such as the number of attempts before giving up.
+
+.. code-block:: python
+
+    @retry(stop_max_attempt_number=7)
+    def stop_after_7_attempts():
+        print "Stopping after 7 attempts"
+
+We don't have all day, so let's set a boundary for how long we should be retrying stuff.
+
+.. code-block:: python
+
+    @retry(stop_max_delay=10000)
+    def stop_after_10_s():
+        print "Stopping after 10 seconds"
+
+Most things don't like to be polled as fast as possible, so let's just wait 2 seconds between retries.
+
+.. code-block:: python
+
+    @retry(wait_fixed=2000)
+    def wait_2_s():
+        print "Wait 2 second between retries"
+
+
+Some things perform best with a bit of randomness injected.
+
+.. code-block:: python
+
+    @retry(wait_random_min=1000, wait_random_max=2000)
+    def wait_random_1_to_2_s():
+        print "Randomly wait 1 to 2 seconds between retries"
+
+Then again, it's hard to beat exponential backoff when retrying distributed services and other remote endpoints.
+
+.. code-block:: python
+
+    @retry(wait_exponential_multiplier=1000, wait_exponential_max=10000)
+    def wait_exponential_1000():
+        print "Wait 2^x * 1000 milliseconds between each retry, up to 10 seconds, then 10 seconds afterwards"
+
+
+We have a few options for dealing with retries that raise specific or general exceptions, as in the cases here.
+
+.. code-block:: python
+
+    def retry_if_io_error(exception):
+        """Return True if we should retry (in this case when it's an IOError), False otherwise"""
+        return isinstance(exception, IOError)
+
+    @retry(retry_on_exception=retry_if_io_error)
+    def might_io_error():
+        print "Retry forever with no wait if an IOError occurs, raise any other errors"
+
+    @retry(retry_on_exception=retry_if_io_error, wrap_exception=True)
+    def only_raise_retry_error_when_not_io_error():
+        print "Retry forever with no wait if an IOError occurs, raise any other errors wrapped in RetryError"
+
+We can also use the result of the function to alter the behavior of retrying.
+
+.. code-block:: python
+
+    def retry_if_result_none(result):
+        """Return True if we should retry (in this case when result is None), False otherwise"""
+        return result is None
+
+    @retry(retry_on_result=retry_if_result_none)
+    def might_return_none():
+        print "Retry forever ignoring Exceptions with no wait if return value is None"
+
+
+Any combination of stop, wait, etc. is also supported to give you the freedom to mix and match.
+
+Contribute
+----------
+
+#. Check for open issues or open a fresh issue to start a discussion around a feature idea or a bug.
+#. Fork `the repository`_ on GitHub to start making your changes to the **master** branch (or branch off of it).
+#. Write a test which shows that the bug was fixed or that the feature works as expected.
+#. Send a pull request and bug the maintainer until it gets merged and published. :) Make sure to add yourself to AUTHORS_.
+
+.. _`the repository`: http://github.com/rholder/retrying
+.. _AUTHORS: https://github.com/rholder/retrying/blob/master/AUTHORS.rst
+
+
+.. :changelog:
+
+History
+-------
+1.3.3 (2014-12-14)
+++++++++++++++++++
+- Add minimum six version of 1.7.0 since anything less will break things
+
+1.3.2 (2014-11-09)
+++++++++++++++++++
+- Ensure we wrap the decorated functions to prevent information loss
+- Allow a jitter value to be passed in
+
+1.3.1 (2014-09-30)
+++++++++++++++++++
+- Add requirements.txt to MANIFEST.in to fix pip installs
+
+1.3.0 (2014-09-30)
+++++++++++++++++++
+- Add upstream six dependency, remove embedded six functionality
+
+1.2.3 (2014-08-25)
+++++++++++++++++++
+- Add support for custom wait and stop functions
+
+1.2.2 (2014-06-20)
+++++++++++++++++++
+- Bug fix to not raise a RetryError on failure when exceptions aren't being wrapped
+
+1.2.1 (2014-05-05)
+++++++++++++++++++
+- Bug fix for explicitly passing in a wait type
+
+1.2.0 (2014-05-04)
+++++++++++++++++++
+- Remove the need for explicit specification of stop/wait types when they can be inferred
+- Add a little checking for exception propagation
+
+1.1.0 (2014-03-31)
+++++++++++++++++++
+- Added proper exception propagation through reraising with Python 2.6, 2.7, and 3.2 compatibility
+- Update test suite for behavior changes
+
+1.0.1 (2013-03-20)
+++++++++++++++++++
+- Fixed a bug where classes not extending from the Python exception hierarchy could slip through
+- Update test suite for custom Python exceptions
+
+1.0.0 (2013-01-21)
+++++++++++++++++++
+- First stable, tested version now exists
+- Apache 2.0 license applied
+- Sanitizing some setup.py and test suite running
+- Added Travis CI support
 
 %package license
 Summary: license components for the retrying package.
@@ -42,7 +242,7 @@ license components for the retrying package.
 %package python
 Summary: python components for the retrying package.
 Group: Default
-Requires: retrying-python3
+Requires: retrying-python3 = %{version}-%{release}
 
 %description python
 python components for the retrying package.
@@ -52,6 +252,7 @@ python components for the retrying package.
 Summary: python3 components for the retrying package.
 Group: Default
 Requires: python3-core
+Provides: pypi(retrying)
 
 %description python3
 python3 components for the retrying package.
@@ -59,14 +260,22 @@ python3 components for the retrying package.
 
 %prep
 %setup -q -n retrying-1.3.3
+cd %{_builddir}/retrying-1.3.3
 
 %build
 export http_proxy=http://127.0.0.1:9/
 export https_proxy=http://127.0.0.1:9/
 export no_proxy=localhost,127.0.0.1,0.0.0.0
-export LANG=C
-export SOURCE_DATE_EPOCH=1533931663
-python3 setup.py build -b py3
+export LANG=C.UTF-8
+export SOURCE_DATE_EPOCH=1583220139
+# -Werror is for werrorists
+export GCC_IGNORE_WERROR=1
+export CFLAGS="$CFLAGS -fno-lto "
+export FCFLAGS="$CFLAGS -fno-lto "
+export FFLAGS="$CFLAGS -fno-lto "
+export CXXFLAGS="$CXXFLAGS -fno-lto "
+export MAKEFLAGS=%{?_smp_mflags}
+python3 setup.py build
 
 %check
 export http_proxy=http://127.0.0.1:9/
@@ -74,11 +283,12 @@ export https_proxy=http://127.0.0.1:9/
 export no_proxy=localhost,127.0.0.1,0.0.0.0
 python3 test_retrying.py
 %install
+export MAKEFLAGS=%{?_smp_mflags}
 rm -rf %{buildroot}
-mkdir -p %{buildroot}/usr/share/doc/retrying
-cp LICENSE %{buildroot}/usr/share/doc/retrying/LICENSE
-cp NOTICE %{buildroot}/usr/share/doc/retrying/NOTICE
-python3 -tt setup.py build -b py3 install --root=%{buildroot}
+mkdir -p %{buildroot}/usr/share/package-licenses/retrying
+cp %{_builddir}/retrying-1.3.3/LICENSE %{buildroot}/usr/share/package-licenses/retrying/1128f8f91104ba9ef98d37eea6523a888dcfa5de
+cp %{_builddir}/retrying-1.3.3/NOTICE %{buildroot}/usr/share/package-licenses/retrying/e92af22a6251770635f880bc9961478b400aae4e
+python3 -tt setup.py build  install --root=%{buildroot}
 echo ----[ mark ]----
 cat %{buildroot}/usr/lib/python3*/site-packages/*/requires.txt || :
 echo ----[ mark ]----
@@ -86,13 +296,10 @@ echo ----[ mark ]----
 %files
 %defattr(-,root,root,-)
 
-%files doc
-%defattr(0644,root,root,0755)
-%doc /usr/share/doc/retrying/*
-
 %files license
-%defattr(-,root,root,-)
-/usr/share/doc/retrying/LICENSE
+%defattr(0644,root,root,0755)
+/usr/share/package-licenses/retrying/1128f8f91104ba9ef98d37eea6523a888dcfa5de
+/usr/share/package-licenses/retrying/e92af22a6251770635f880bc9961478b400aae4e
 
 %files python
 %defattr(-,root,root,-)
