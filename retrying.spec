@@ -4,7 +4,7 @@
 #
 Name     : retrying
 Version  : 1.3.3
-Release  : 39
+Release  : 40
 URL      : https://github.com/rholder/retrying/archive/v1.3.3.tar.gz
 Source0  : https://github.com/rholder/retrying/archive/v1.3.3.tar.gz
 Summary  : Retrying
