@@ -4,7 +4,7 @@
 #
 Name     : retrying
 Version  : 1.3.3
-Release  : 48
+Release  : 49
 URL      : https://github.com/rholder/retrying/archive/v1.3.3.tar.gz
 Source0  : https://github.com/rholder/retrying/archive/v1.3.3.tar.gz
 Summary  : Retrying
@@ -13,9 +13,9 @@ License  : Apache-2.0
 Requires: retrying-license = %{version}-%{release}
 Requires: retrying-python = %{version}-%{release}
 Requires: retrying-python3 = %{version}-%{release}
-Requires: six
 BuildRequires : buildreq-distutils3
-BuildRequires : six
+BuildRequires : pypi(six)
+BuildRequires : pypi-six
 
 %description
 Retrying
@@ -60,7 +60,7 @@ export http_proxy=http://127.0.0.1:9/
 export https_proxy=http://127.0.0.1:9/
 export no_proxy=localhost,127.0.0.1,0.0.0.0
 export LANG=C.UTF-8
-export SOURCE_DATE_EPOCH=1602133754
+export SOURCE_DATE_EPOCH=1650521716
 export GCC_IGNORE_WERROR=1
 export CFLAGS="$CFLAGS -fno-lto "
 export FCFLAGS="$FFLAGS -fno-lto "
